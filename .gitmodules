@@ -1,0 +1,3 @@
+[submodule "lambert_w"]
+	path = src/globalOpt/lambert_w
+	url = git@github.com:CzB404/lambert_w.git
