@@ -3,7 +3,7 @@ Deep Learning for Optimal Energy-Efficient Power Control in Wireless Interferenc
 
 This code package is related to the following scientific article:
 
-Bho Matthiesen, Alessio Zappone, Eduard A. Jorswieck, and Merouane Debbah, "Deep Learning for Optimal Energy-Efficient Power Control in Wireless Interference Networks," submitted to IEEE Journal on Selected Areas in Communication.
+Bho Matthiesen, Alessio Zappone, Eduard A. Jorswieck, and Merouane Debbah, "[Deep Learning for Optimal Energy-Efficient Power Control in Wireless Interference Networks](https://arxiv.org/abs/1812.06920)," submitted to IEEE Journal on Selected Areas in Communication.
 
 ## Contents
 
