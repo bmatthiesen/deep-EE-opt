@@ -13,7 +13,7 @@ The deep artificial neural network proposed in the paper cited above. Short desc
 * `prepareDset.py`: Generates the dataset for training from the global Optimization results
 * `dl.py`: The network
 * `run.py`: Call this file to train the network and generate the models in `../../results/`
-* `run_val_loss.py`, `val_loss.py`: The validation loss computed by Keras was not expected. We calculate it manually with these scripts
+* `run_val_loss.py`, `val_loss.py`: The validation loss computed by Keras was not as expected. We calculate it manually with these scripts
 * `evaluate.py`: Evaluate the model against the test set
 * `generalization.py`: Evaluate the model against the Hata-COST231 channel model
 
