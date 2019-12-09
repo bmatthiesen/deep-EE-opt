@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 
-# Copyright (C) 2018 Bho Matthiesen
+# Copyright (C) 2018-2019 Bho Matthiesen, Karl-Ludwig Besser
 # 
 # This program is used in the article:
 # 
-# Bho Matthiesen, Alessio Zappone, Eduard A. Jorswieck, and Merouane Debbah,
-# "Deep Learning for Optimal Energy-Efficient Power Control in Wireless
-# Interference Networks," submitted to IEEE Journal on Selected Areas in
-# Communication.
+# Bho Matthiesen, Alessio Zappone, Karl-L. Besser, Eduard A. Jorswieck, and
+# Merouane Debbah, "A Globally Optimal Energy-Efficient Power Control Framework
+# and its Efficient Implementation in Wireless Interference Networks,"
+# submitted to IEEE Transactions on Signal Processing
 # 
 # License:
 # This program is licensed under the GPLv2 license. If you in any way use this
@@ -23,12 +23,12 @@ import h5py
 import numpy as np
 
 ofn = '../../data/dset_final.h5'
-f = h5py.File('../../data/results.h5', 'r')
+f = h5py.File('../../data/global_results.h5', 'r')
 
 sets = [
         {'name': 'validation', 'cidx': slice(200), 'pidx': slice(None)},
-        {'name': 'training', 'cidx': slice(200, 2200), 'pidx': slice(None)},
-        {'name': 'test', 'cidx': slice(2200, 12200), 'pidx': slice(None)},
+        {'name': 'training', 'cidx': slice(1000, 3000), 'pidx': slice(None)},
+        {'name': 'test', 'cidx': slice(10000, 20000), 'pidx': slice(None)},
         ]
 
 Plin = 10**(np.asarray(f['input']['PdB'][...], dtype=np.float)/10)
@@ -70,13 +70,21 @@ with h5py.File(ofn, 'w') as outf:
 
         del o
 
-        sca = np.asarray(f['SCA'][s['cidx'], s['pidx']])
-        scam = np.asarray(f['SCAmax'][s['cidx'], s['pidx']])
+        try:
+            sca = np.asarray(f['SCA'][s['cidx'], s['pidx']])
+            scam = np.asarray(f['SCAmax'][s['cidx'], s['pidx']])
+        except KeyError:
+            sca = None
+            scam = None
 
-        Bsca = np.isnan(sca)
+            print('Skipping SCA')
 
-        if np.all(~Bsca):
-            outf[s['name']].create_dataset('SCA', data = np.reshape(sca, np.prod(sca.shape)))
-            outf[s['name']].create_dataset('SCAmax', data = np.reshape(scam, np.prod(scam.shape)))
-        elif np.any(~Bsca):
-            print('SCA looks wrong')
+        if sca is not None:
+            Bsca = np.isnan(sca)
+
+            if np.all(~Bsca):
+                outf[s['name']].create_dataset('SCA', data = np.reshape(sca, np.prod(sca.shape)))
+                outf[s['name']].create_dataset('SCAmax', data = np.reshape(scam, np.prod(scam.shape)))
+            elif np.any(~Bsca):
+                print('SCA looks wrong')
+

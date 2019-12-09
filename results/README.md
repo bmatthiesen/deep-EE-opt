@@ -1,20 +1,18 @@
-Deep Learning for Optimal Energy-Efficient Power Control in Wireless Interference Networks
+A Globally Optimal Energy-Efficient Power Control Framework and its Efficient Implementation in Wireless Interference Networks
 ==================
 
 This code package is related to the following scientific article:
 
-Bho Matthiesen, Alessio Zappone, Eduard A. Jorswieck, and Merouane Debbah, "[Deep Learning for Optimal Energy-Efficient Power Control in Wireless Interference Networks](https://arxiv.org/abs/1812.06920)," submitted to IEEE Journal on Selected Areas in Communication.
+Bho Matthiesen, Alessio Zappone, Karl-L. Besser, Eduard A. Jorswieck, and Merouane Debbah, "[A Globally Optimal Energy-Efficient Power Control Framework and its Efficient Implementation in Wireless Interference Networks](https://arxiv.org/abs/1812.06920)," submitted to IEEE Transactions on Signal Processing
 
 ## Contents
 
-The trained models. `final128` contains the big model used for the numerical evalution in the paper cited above. `final16` is the smaller model analyzed in the last subsection of the numerical evaluation.
+The trained models. `final4users` contains the big model used for the numerical evalution in the paper cited above. `final16` is the smaller model analyzed in the last subsection of the numerical evaluation. `final7` contains the models of the 7 user scenario.
 
 
 ## Acknowledgements
 
-The research of Bho Matthiesen and Eduard A. Jorswieck was supported in part by the Deutsche Forschungsgemeinschaft (DFG) in the [Collaborative Research Center 912 "Highly Adaptive Energy-Efficient Computing."](https://tu-dresden.de/ing/forschung/sfb912)
-
-The work of A. Zappone and M. Debbah was funded by the European Commission through the H2020-MSCA IF-BESMART project under Grant Agreement 749336.
+This research was supported in part by the Deutsche Forschungsgemeinschaft (DFG) in the [Collaborative Research Center 912 "Highly Adaptive Energy-Efficient Computing."](https://tu-dresden.de/ing/forschung/sfb912) and under grant JO 801/23-1, and by the European Commission through the H2020-MSCA IF-BESMART project under Grant Agreement 749336.
 
 We thank the Center for Information Services and High Performance Computing (ZIH) at TU Dresden for generous allocations of computer time.
 

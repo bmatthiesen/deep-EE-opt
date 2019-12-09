@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 
-# Copyright (C) 2018 Bho Matthiesen
+# Copyright (C) 2018-2019 Bho Matthiesen, Karl-Ludwig Besser
 # 
 # This program is used in the article:
 # 
-# Bho Matthiesen, Alessio Zappone, Eduard A. Jorswieck, and Merouane Debbah,
-# "Deep Learning for Optimal Energy-Efficient Power Control in Wireless
-# Interference Networks," submitted to IEEE Journal on Selected Areas in
-# Communication.
+# Bho Matthiesen, Alessio Zappone, Karl-L. Besser, Eduard A. Jorswieck, and
+# Merouane Debbah, "A Globally Optimal Energy-Efficient Power Control Framework
+# and its Efficient Implementation in Wireless Interference Networks,"
+# submitted to IEEE Transactions on Signal Processing
 # 
 # License:
 # This program is licensed under the GPLv2 license. If you in any way use this
@@ -30,15 +30,47 @@ import os.path
 import resource
 import timeit
 
+class IndexPermutationLayer(keras.layers.Layer):
+    def __init__(self, permutations=None, **kwargs):
+        if permutations is None:
+            permutations = list(it.permutations(range(DIM)))
+        self.permutations = K.constant(permutations, 'int32')
+        self.num_perms, self.num_ue = np.shape(permutations)
+        self.perm = 0
+        super(IndexPermutationLayer, self).__init__(**kwargs)
+
+    def call(self, x, training=None):
+        def permute_users():
+            _perm = K.random_uniform((1,), 0, self.num_perms, dtype='int32')
+            perm = self.permutations[_perm[0], :]
+            self.perm = perm
+            t = K.tile(perm, self.num_ue)
+            r = K.repeat_elements(perm, self.num_ue, 0)
+            perm_idx = self.num_ue*r + t
+            self.perm_idx = K.concatenate((perm_idx, K.constant([self.num_ue**2], 'int32')))
+            P = tf.gather(x, self.perm_idx, axis=-1)
+            return P
+        return K.in_train_phase(permute_users, x, training=training)
+
+def perm_loss(y_true, y_pred, model=None, layer_name='perm_layer', loss_func=keras.losses.mse):
+    #training = K.learning_phase()
+    #if training == 1 or training is True:
+    #    _perm = model.get_layer(layer_name).perm#_idx
+    #    y_true = tf.gather(y_true, _perm, axis=-1)
+    _perm = model.get_layer(layer_name).perm#_idx
+    y_true = tf.gather(y_true, _perm, axis=-1)
+    return loss_func(y_true, y_pred)
+
 def rel_mse(x_true, x_pred):
     loss = K.square(K.abs((x_true - x_pred)/ x_true))
     return K.mean(loss, axis=-1)
 
+DIM = 4
 mu = 4
 Pc = 1
 
 def calcObjective(tensors):
-    h = keras.layers.Reshape((4,4))(tensors[0][:,:-1])
+    h = keras.layers.Reshape((DIM,DIM))(tensors[0][:,:-1])
     mmu = mu * tensors[0][:,-1]
     x = keras.layers.Activation('relu')(tensors[1])
 
@@ -50,7 +82,6 @@ def calcObjective(tensors):
     ret = K.sum(rate / (keras.layers.multiply([mmu, x]) + Pc), axis=-1)
     #ret = tf.Print(ret, [ret])
     #ret = K.sum(rate, axis=-1)
-
     return ret
 
 def calcObjectivePow(tensors):
@@ -61,42 +92,58 @@ def calcObjectivePow(tensors):
 
     return calcObjective([h, x])
 
-def createModel(layer, trainOnObj):
+def createModel(layer, trainOnObj, sumOutputLayer = False):
     from dl import calcObjective, calcObjectivePow, rel_mse
 
-    inlayer = keras.layers.Input(shape = (17,))
+    inlayer = keras.layers.Input(shape = (DIM**2+1,))
 
     x = inlayer
+    __permutations = list(it.permutations(range(DIM)))
+    x = IndexPermutationLayer(__permutations, name="perm_layer")(x)
     for n, a in zip(*layer):
         x = keras.layers.Dense(n, activation = a)(x)
-    predPower = keras.layers.Dense(4, activation = 'linear')(x)
+    predPower = keras.layers.Dense(DIM, activation = 'linear')(x)
+
+    assert(not (trainOnObj and sumOutputLayer))
 
     if trainOnObj:
         objlayer = keras.layers.Lambda(calcObjectivePow, (1,))([inlayer, predPower])
         model = keras.models.Model(inputs = inlayer, outputs = objlayer)
+    elif sumOutputLayer:
+        sumLayer = keras.layers.Dense(DIM+1, activation = 'linear', use_bias = False)
+        sumLayer.trainable = False
+
+        model = keras.models.Model(inputs = inlayer, outputs = sumLayer(predPower))
+        sumLayer.set_weights([np.hstack((np.identity(DIM), np.ones((DIM,1))))])
     else:
         model = keras.models.Model(inputs = inlayer, outputs = predPower)
 
-    opt = keras.optimizers.Nadam()
+    #opt = keras.optimizers.Nadam()
+    opt = keras.optimizers.Adam()
 
     if trainOnObj:
-        model.compile(opt, loss = rel_mse)
+        #model.compile(opt, loss=rel_mse)
+        model.compile(opt, loss=lambda x, y: perm_loss(x, y, model=model, layer_name='perm_layer', loss_func=rel_mse))  # Permutation
     else:
-        model.compile(opt, loss ='mean_squared_error')
+        #model.compile(opt, loss='mean_squared_error')
+        model.compile(opt, loss=lambda x, y: perm_loss(x, y, model=model, layer_name='perm_layer', loss_func=keras.losses.mse))  # Permutation
 
     return model
-def DL(layer, bs, nEpochs, dfile, savedir, wpidx, trainOnObj = True, init = None):
+
+def DL(layer, bs, nEpochs, dfile, savedir, wpidx, trainOnObj=False, sumOutputLayer=False, init=None, perc_tset=1.):
+    assert(not (trainOnObj and sumOutputLayer))
+
     # create result directory
     os.makedirs(savedir, exist_ok = True)
 
     # set filenames
-    cp_name = os.path.join(savedir, 'modelCP-wp%d.{epoch:03d}.h5' % wpidx)
+    cp_name = os.path.join(savedir, 'modelCP-wp%d.{epoch:04d}.h5' % wpidx)
     history_name = os.path.join(savedir, 'history-wp%d.h5' % wpidx)
     savefile = os.path.join(savedir, 'model-wp%d.h5' % wpidx)
 
 
     # build model from WP
-    model = createModel(layer, trainOnObj)
+    model = createModel(layer, trainOnObj, sumOutputLayer)
 
     # and show what we did
     model.summary()
@@ -144,15 +191,35 @@ def DL(layer, bs, nEpochs, dfile, savedir, wpidx, trainOnObj = True, init = None
                         pass
 
     hist = LossHistory(history_name, True)
-    checkpointer = keras.callbacks.ModelCheckpoint(cp_name, verbose=1, save_best_only = False)
+    checkpointer = keras.callbacks.ModelCheckpoint(cp_name, verbose=1, save_best_only=False, period=1)#, period=1000)
 
     with h5py.File(dfile, 'r') as f:
         tin = f['training/input'][...]
+        vin = f['validation/input'][...]
 
         if trainOnObj:
             tout = f['training/objval'][...]
+            vout = f['validation/objval'][...]
+        elif sumOutputLayer:
+            tout = f['training/xopt'][...]
+            tout = np.hstack((tout, np.sum(tout,axis=1)[:,np.newaxis]))
+            vout = f['validation/xopt'][...]
+            vout = np.hstack((vout, np.sum(vout,axis=1)[:,np.newaxis]))
         else:
             tout = f['training/xopt'][...]
+            vout = f['validation/xopt'][...]
+
+    ### Select channels randomly
+    #print(tin.shape)
+    #_num_channels = len(tin)/51
+    ##perc_tset = .005
+    #selected_channels = np.random.randint(0, _num_channels, size=int(_num_channels*perc_tset))
+    #tin = np.vstack([tin[_select*51:(_select+1)*51] for _select in selected_channels])
+    #print(tin.shape)
+    #print(tout.shape)
+    #tout = np.concatenate([tout[_select*51:(_select+1)*51] for _select in selected_channels])
+    #print(tout.shape)
+    ###
 
     history = model.fit(tin, tout, validation_data=None, epochs=nEpochs, batch_size=bs, callbacks=[hist, checkpointer])
     model.save(savefile)

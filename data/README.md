@@ -1,18 +1,19 @@
-Deep Learning for Optimal Energy-Efficient Power Control in Wireless Interference Networks
+A Globally Optimal Energy-Efficient Power Control Framework and its Efficient Implementation in Wireless Interference Networks
 ==================
 
 This code package is related to the following scientific article:
 
-Bho Matthiesen, Alessio Zappone, Eduard A. Jorswieck, and Merouane Debbah, "[Deep Learning for Optimal Energy-Efficient Power Control in Wireless Interference Networks](https://arxiv.org/abs/1812.06920)," submitted to IEEE Journal on Selected Areas in Communication.
+Bho Matthiesen, Alessio Zappone, Karl-L. Besser, Eduard A. Jorswieck, and Merouane Debbah, "[A Globally Optimal Energy-Efficient Power Control Framework and its Efficient Implementation in Wireless Interference Networks](https://arxiv.org/abs/1812.06920)," submitted to IEEE Transactions on Signal Processing
 
 ## Contents
 
-Randomly generated channels and global optimal power allocation results. `results.h5` contains also first-order optimal power allocations for the test set. Please use `code/DL/prepareDset.py` to generate the training data from these files.
+Randomly generated channels and global optimal power allocation results. `wsee*-processed.h5` contains also first-order optimal power allocations for the test set. Please use `src/DL/prepareDset.py` to generate the training data from these files.
 
 List of files:
 
-* `channels.h5`: Channels used for training and validation
-* `results.h5`: Global optimal power allocations for `channels.h5`. The training data is generated from this file
+* `channels-4.h5`, `channels-7.h5`: Channels used for training and validation for 4 and 7 users, respectively
+* `wsee4-processed.h5`, `wsee7-processed.h5`: Global optimal power allocations for `channels.h5`. The training data is generated from this file
+* `dset4.h5`, `dset7.h5`: Training, Validation, and Test Data
 * `channels-hataUrban.h5`: Channels with Hata-COST231 Urban path loss and log-normal shadowing
 * `results_hataUrban.h5`: Global optimal power allocations for `channels-hataUrban.h5`
 * `channels-hataUrban-noSF.h5`: Channels with Hata-COST231 Urban path loss (no shaodwing)
@@ -21,9 +22,7 @@ List of files:
 
 ## Acknowledgements
 
-The research of Bho Matthiesen and Eduard A. Jorswieck was supported in part by the Deutsche Forschungsgemeinschaft (DFG) in the [Collaborative Research Center 912 "Highly Adaptive Energy-Efficient Computing."](https://tu-dresden.de/ing/forschung/sfb912)
-
-The work of A. Zappone and M. Debbah was funded by the European Commission through the H2020-MSCA IF-BESMART project under Grant Agreement 749336.
+This research was supported in part by the Deutsche Forschungsgemeinschaft (DFG) in the [Collaborative Research Center 912 "Highly Adaptive Energy-Efficient Computing."](https://tu-dresden.de/ing/forschung/sfb912) and under grant JO 801/23-1, and by the European Commission through the H2020-MSCA IF-BESMART project under Grant Agreement 749336.
 
 We thank the Center for Information Services and High Performance Computing (ZIH) at TU Dresden for generous allocations of computer time.
 

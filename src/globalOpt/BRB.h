@@ -1,11 +1,11 @@
-/* Copyright (C) 2018 Bho Matthiesen
+/* Copyright (C) 2018-2019 Bho Matthiesen, Karl-Ludwig Besser
  * 
  * This program is used in the article:
  * 
- * Bho Matthiesen, Alessio Zappone, Eduard A. Jorswieck, and Merouane Debbah,
- * "Deep Learning for Optimal Energy-Efficient Power Control in Wireless
- * Interference Networks," submitted to IEEE Journal on Selected Areas in
- * Communication.
+ * Bho Matthiesen, Alessio Zappone, Karl-L. Besser, Eduard A. Jorswieck, and
+ * Merouane Debbah, "A Globally Optimal Energy-Efficient Power Control Framework
+ * and its Efficient Implementation in Wireless Interference Networks,"
+ * submitted to IEEE Transactions on Signal Processing
  * 
  * License:
  * This program is licensed under the GPLv2 license. If you in any way use this
@@ -15,7 +15,8 @@
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details. */
+ * GNU General Public License for more details.
+ */
 
 #ifndef _BRB_H
 #define _BRB_H
@@ -189,7 +190,6 @@ class BRB
 
 		void reduction(const PBox& P, RBox& red, const double gamma) const; // false if reduced box is empty
 
-		virtual double bound(const vtype& lb, const vtype& ub) const =0;
 		virtual void bound(RBox& r) const =0;
 
 		virtual double red_alpha(const size_t i, const double gamma, const vtype& lb, const vtype& ub) const =0;
@@ -200,6 +200,7 @@ class BRB
 		virtual bool isEmpty(const PBox& r) const =0;
 		virtual bool feasible(const RBox& r) const =0;
 		virtual double obj(const RBox& r) const =0;
+		virtual double obj(const vtype& x) const =0;
 
 		virtual void checkpoint() const;
 
@@ -337,12 +338,9 @@ BRB<Dim>::optimize(bool startFromXopt)
 
 	if (startFromXopt)
 	{
-		throw std::runtime_error(ERR("not implemented"));
-
-		// set from CP: runtime, xopt, iter
-		//tic = clock::now() - std::chrono::duration_cast<clock::duration>(std::chrono::duration<double>(runtime));
-		//optval = obj(xopt);
-		//lastUpdate = iter;
+		tic = clock::now();
+		optval = obj(xopt);
+		lastUpdate = iter = 0;
 
 	}
 	else
@@ -369,21 +367,21 @@ BRB<Dim>::optimize(bool startFromXopt)
 		{
 			RBox red(pool.get());
 
-			double tmp = bound(P[i].lb, P[i].ub); // set bound
 			const double gamma = calcTolerance(useRelTol, optval, epsilon);
-
-			if (tmp < gamma || isEmpty(P[i])) {
-				pool.put(red.move_data());
-				continue; // skip boxes containing no feasible points
-			}
 
 			reduction(P[i], red, gamma); // update lb, ub
 			bound(red);
 
+			if (red.bound < gamma || isEmpty(P[i])) {
+				pool.put(red.move_data());
+				continue; // skip boxes containing no feasible points
+			}
+
+
 			// step 2: update CBV, update R
 			if (feasible(red))
 			{
-				tmp = obj(red);
+				double tmp = obj(red);
 
 				if (tmp > optval)
 				{

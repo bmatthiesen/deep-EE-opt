@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 
-# Copyright (C) 2018 Bho Matthiesen
+# Copyright (C) 2018-2019 Bho Matthiesen, Karl-Ludwig Besser
 # 
 # This program is used in the article:
 # 
-# Bho Matthiesen, Alessio Zappone, Eduard A. Jorswieck, and Merouane Debbah,
-# "Deep Learning for Optimal Energy-Efficient Power Control in Wireless
-# Interference Networks," submitted to IEEE Journal on Selected Areas in
-# Communication.
+# Bho Matthiesen, Alessio Zappone, Karl-L. Besser, Eduard A. Jorswieck, and
+# Merouane Debbah, "A Globally Optimal Energy-Efficient Power Control Framework
+# and its Efficient Implementation in Wireless Interference Networks,"
+# submitted to IEEE Transactions on Signal Processing
 # 
 # License:
 # This program is licensed under the GPLv2 license. If you in any way use this

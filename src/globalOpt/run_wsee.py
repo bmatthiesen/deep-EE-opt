@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 
-# Copyright (C) 2018 Bho Matthiesen
+# Copyright (C) 2018-2019 Bho Matthiesen, Karl-Ludwig Besser
 # 
 # This program is used in the article:
 # 
-# Bho Matthiesen, Alessio Zappone, Eduard A. Jorswieck, and Merouane Debbah,
-# "Deep Learning for Optimal Energy-Efficient Power Control in Wireless
-# Interference Networks," submitted to IEEE Journal on Selected Areas in
-# Communication.
+# Bho Matthiesen, Alessio Zappone, Karl-L. Besser, Eduard A. Jorswieck, and
+# Merouane Debbah, "A Globally Optimal Energy-Efficient Power Control Framework
+# and its Efficient Implementation in Wireless Interference Networks,"
+# submitted to IEEE Transactions on Signal Processing
 # 
 # License:
 # This program is licensed under the GPLv2 license. If you in any way use this
@@ -35,19 +35,19 @@ PdB = np.array(range(-30,20+1,1))
 Plin = 10**(PdB/10)
 
 # load config
-taskid = int(os.getenv("SLURM_ARRAY_TASK_ID"))
-savedir = os.getenv('JOB_HPC_SAVEDIR')
+cidx = int(os.getenv("SLURM_ARRAY_TASK_ID", "0"))
+savedir = os.getenv('JOB_HPC_SAVEDIR', "tmp")
 
 # create necessary directories
 os.makedirs(savedir, exist_ok = True)
 
 # set filenames
-basename = 'task{}.h5'.format(taskid)
+basename = 'channel{}.h5'.format(cidx)
 
 try:
     wpfile = sys.argv[1]
 except IndexError:
-    wpfile = '../../data/channels.h5'
+    wpfile = '../../data/channels-7.h5'
 
 outfile = os.path.join(savedir, 'res_' + basename)
 
@@ -55,46 +55,61 @@ outfile = os.path.join(savedir, 'res_' + basename)
 chanf = h5py.File(wpfile, 'r')
 heff = chanf['input']['channel_to_noise_matched']
 
-
-# compute channel list
-numtasks = int(os.getenv("SLURM_ARRAY_TASK_COUNT"))
-channel_ids = np.array_split(np.arange(heff.shape[0], dtype=np.uint), numtasks)[taskid]
+# get dimension and set select correct WSEE solver
+numUE = heff.shape[1]
+WSEE = getattr(wseePy, 'WSEE%d' % numUE)
 
 # create result file
-result_dt = wseePy.WSEE(1,1).getResultDt()
+result_dt = WSEE(1,1).getResultDt()
 
-with h5py.File(outfile, 'w') as resf:
-    resf.create_dataset('channel indices', data = channel_ids)
-    resf.create_dataset('PdB', data = PdB)
-    resf.create_dataset('results', (len(channel_ids), len(PdB)), dtype=result_dt, chunks = (1, len(PdB)))
+try:
+    with h5py.File(outfile, 'x') as resf:
+        resf.create_dataset('cidx', data = cidx)
+        resf.create_dataset('Channel', data = chanf['input']['channel'][cidx])
+        resf.create_dataset('Effective Channel', data = heff[cidx])
+        resf.create_dataset('PdB', data = PdB)
+        resf.create_dataset('results', (len(PdB),), dtype=result_dt)
+
+    pidxRange = range(len(PdB))
+except OSError as e:
+    with h5py.File(outfile, 'r') as resf:
+        if resf['cidx'][...] != cidx:
+            raise RuntimeError('corrupted result file (cidx mismatch)')
+        if resf['results'].shape[0] != len(PdB):
+            raise RuntimeError('corrupted result file (PdB len mismatch)')
+        
+        pidxRange = np.where(resf['results']['Epsilon'] == 0)[0]
+
 
 # some debug output
-print('Task ID = {}\nSavefile = {}\nNum Tasks = {}\nChannel IDs = {}\n\n'.format(taskid, outfile, numtasks, str(channel_ids)))
+print('Channel ID = {}\nSavefile = {}\nNum Tasks = {}'.format(cidx, outfile, len(PdB)))
+
+if len(pidxRange) != len(PdB):
+    print('Remaining Tasks = {}\n\n'.format(len(pidxRange)))
+else:
+    print('\n\n')
+sys.stdout.flush()
 
 # start slaving away
-dix = np.diag_indices(4)
-t = wseePy.WSEE(mu, Pc)
-for idx in range(len(channel_ids)):
-    cidx = channel_ids[idx]
+dix = np.diag_indices(numUE)
+t = WSEE(mu, Pc)
 
-    print(30*'=' + ' cidx = ' + str(cidx) + ' ' + 30*'=')
+beta = np.asarray(heff[cidx], dtype=np.double)
+alpha = beta[dix]
+beta[dix] = 0
+t.setChan(alpha, beta)
+
+for pidx in pidxRange:
+    print((30*'=' + ' PdB = {} ({}/{}) ' + 30*'=').format(PdB[pidx], pidx, len(PdB)))
     sys.stdout.flush()
 
-    res = np.empty(len(PdB), dtype=result_dt)
-
-    beta = np.asarray(heff[cidx], dtype=np.double)
-    alpha = beta[dix]
-    beta[dix] = 0
-    t.setChan(alpha, beta)
-
-    for pidx in range(len(PdB)):
-        t.setPmax(Plin[pidx])
-        t.optimize()
-
-        res[pidx] = t.result()
+    t.setPmax(Plin[pidx])
+    t.optimize()
 
     with h5py.File(outfile, 'r+') as resf:
-        resf['results'][idx,:] = res
+        resf['results'][pidx] = t.result()
+
+    print('\n\n')
 
 print(30*'=' + ' DONE ' + 30*'=')
 

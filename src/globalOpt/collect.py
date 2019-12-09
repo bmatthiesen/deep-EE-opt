@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 
-# Copyright (C) 2018 Bho Matthiesen
+# Copyright (C) 2018-2019 Bho Matthiesen, Karl-Ludwig Besser
 # 
 # This program is used in the article:
 # 
-# Bho Matthiesen, Alessio Zappone, Eduard A. Jorswieck, and Merouane Debbah,
-# "Deep Learning for Optimal Energy-Efficient Power Control in Wireless
-# Interference Networks," submitted to IEEE Journal on Selected Areas in
-# Communication.
+# Bho Matthiesen, Alessio Zappone, Karl-L. Besser, Eduard A. Jorswieck, and
+# Merouane Debbah, "A Globally Optimal Energy-Efficient Power Control Framework
+# and its Efficient Implementation in Wireless Interference Networks,"
+# submitted to IEEE Transactions on Signal Processing
 # 
 # License:
 # This program is licensed under the GPLv2 license. If you in any way use this
@@ -25,14 +25,14 @@ from pathlib import Path
 import sys
 import numpy as np
 
-respath = '../../results/wsee_lambert/'
+respath = '/home/matthiesen/Work/deep-opt/tmp/'
 outfile = os.path.join(respath, 'results.h5')
-chanfile = '../..//data/selchan.h5'
+chanfile = '/home/matthiesen/Work/deep-opt/data/channels-7.h5'
 #respath = '../../results/'
 #outfile = os.path.join(respath, 'results.h5')
 #chanfile = '../../data/channels.h5'
 
-glob_pattern = "res_task*h5"
+glob_pattern = "res_channel*h5"
 
 scale = np.log2(np.e)
 
@@ -51,9 +51,9 @@ with h5py.File(outfile, 'w') as outf:
 
                     first = False
 
-                    objval = outf.create_dataset('objval', (numChan, res['results'].shape[1]), dtype = res['results']['Objective Value'].dtype, fillvalue = np.nan)
-                    xopt = outf.create_dataset('xopt', (numChan, res['results'].shape[1]), dtype = (res['results']['xopt'].dtype, res['results']['xopt'].shape[2]))
-                    runtime = outf.create_dataset('runtime', (numChan, res['results'].shape[1]), dtype = res['results']['Runtime'].dtype, fillvalue = np.nan)
+                    objval = outf.create_dataset('objval', (numChan, res['results'].shape[0]), dtype = res['results']['Objective Value'].dtype, fillvalue = np.nan)
+                    xopt = outf.create_dataset('xopt', (numChan, res['results'].shape[0]), dtype = (res['results']['xopt'].dtype, res['results']['xopt'].shape[1]))
+                    runtime = outf.create_dataset('runtime', (numChan, res['results'].shape[0]), dtype = res['results']['Runtime'].dtype, fillvalue = np.nan)
 
                     dset = outf.create_group('input')
                     dset.create_dataset('PdB', data = res['PdB'], dtype = res['PdB'].dtype)
@@ -64,8 +64,8 @@ with h5py.File(outfile, 'w') as outf:
 
                     dset.create_dataset('PA inefficency',data = 4.0, dtype = np.float32)
                     dset.create_dataset('Pc',data = 1.0, dtype = np.float32)
-                    dset.create_dataset('epsilon', data = res['results'][0,0]['Epsilon'], dtype=res['results']['Epsilon'].dtype)
-                    dset.create_dataset('Relative Tolerance', data = res['results'][0,0]['Relative Tolerance'], dtype = np.bool)
+                    dset.create_dataset('epsilon', data = res['results'][0]['Epsilon'], dtype=res['results']['Epsilon'].dtype)
+                    dset.create_dataset('Relative Tolerance', data = res['results'][0]['Relative Tolerance'], dtype = np.bool)
 
                 robjval = scale * res['results']['Objective Value'][...]
                 rxopt = res['results']['xopt'][...]
@@ -77,9 +77,9 @@ with h5py.File(outfile, 'w') as outf:
                     rxopt[sel] = np.nan
                     rruntime[sel] = np.nan
                 
-                objval[res['channel indices'][...], :] = robjval
-                xopt[res['channel indices'][...], :] = rxopt
-                runtime[res['channel indices'][...], :] = rruntime
+                objval[res['cidx'][...], :] = robjval
+                xopt[res['cidx'][...], :] = rxopt
+                runtime[res['cidx'][...], :] = rruntime
 
                 print(str(fn))
 

@@ -1,23 +1,32 @@
+#!/usr/bin/env python3
+
+# Copyright (C) 2018-2019 Bho Matthiesen, Karl-Ludwig Besser
+# 
+# This program is used in the article:
+# 
+# Bho Matthiesen, Alessio Zappone, Karl-L. Besser, Eduard A. Jorswieck, and
+# Merouane Debbah, "A Globally Optimal Energy-Efficient Power Control Framework
+# and its Efficient Implementation in Wireless Interference Networks,"
+# submitted to IEEE Transactions on Signal Processing
+# 
+# License:
+# This program is licensed under the GPLv2 license. If you in any way use this
+# code for research that results in publications, please cite our original
+# article listed above.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
 """Hata-COST231 Channel Model
 
-Copyright (C) 2018 Bho Matthiesen
+References:
+    [1] 3GPP, "Digital cellular telecommunications systems (Phase 2+); Radio
+        network planning aspects." 3GPP ETSI TR 43.030, V9.0.0, Feb. 2010.
 
-This program is used in the article:
-
-Bho Matthiesen, Alessio Zappone, Eduard A. Jorswieck, and Merouane Debbah,
-"Deep Learning for Optimal Energy-Efficient Power Control in Wireless
-Interference Networks," submitted to IEEE Journal on Selected Areas in
-Communication.
-
-License:
-This program is licensed under the GPLv2 license. If you in any way use this
-code for research that results in publications, please cite our original
-article listed above.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+    [2] T. S. Rappaport, "Wireless Communications: Principles and Practices."
+        Prentice Hall, 2nd ed., Section 3.10.5.
 """
 
 import numpy as np

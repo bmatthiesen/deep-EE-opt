@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 
-# Copyright (C) 2018 Bho Matthiesen
+# Copyright (C) 2018-2019 Bho Matthiesen, Karl-Ludwig Besser
 # 
 # This program is used in the article:
 # 
-# Bho Matthiesen, Alessio Zappone, Eduard A. Jorswieck, and Merouane Debbah,
-# "Deep Learning for Optimal Energy-Efficient Power Control in Wireless
-# Interference Networks," submitted to IEEE Journal on Selected Areas in
-# Communication.
+# Bho Matthiesen, Alessio Zappone, Karl-L. Besser, Eduard A. Jorswieck, and
+# Merouane Debbah, "A Globally Optimal Energy-Efficient Power Control Framework
+# and its Efficient Implementation in Wireless Interference Networks,"
+# submitted to IEEE Transactions on Signal Processing
 # 
 # License:
 # This program is licensed under the GPLv2 license. If you in any way use this
@@ -35,22 +35,23 @@ parser.add_argument('key')
 parser.add_argument('index', type=int)
 args = parser.parse_args()
 
-rf = '../../data/dset_final.h5'
+rf = 'dset4.h5'
 
 with h5py.File(rf,'r') as f:
-    inp = f['validation/input'][...]
-    obj = f['validation/objval'][...]
+    inp = f['training/input'][...]
+    obj = f['training/objval'][...]
+    #inp = f['validation/input'][...]
+    #obj = f['validation/objval'][...]
 
 def predict(model, inp):
     pred = np.asarray(model.predict(inp), dtype=np.float)
     predlin = K.clip(tf.Variable(10**pred), 0, 1)
     Pmax = 10**np.array(inp[:,-1])
     obj = K.eval(dl.calcObjective([tf.Variable(10**np.asarray(inp, dtype=np.float)), predlin]))
-
     return obj
 
 
-model = keras.models.load_model(args.model)
+model = keras.models.load_model(args.model, compile=False, custom_objects={"IndexPermutationLayer": dl.IndexPermutationLayer})
 pred = predict(model, inp)
 loss = np.mean((obj-pred)**2)
 

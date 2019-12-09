@@ -1,11 +1,11 @@
-# Copyright (C) 2018 Bho Matthiesen
+# Copyright (C) 2018-2019 Bho Matthiesen, Karl-Ludwig Besser
 # 
 # This program is used in the article:
 # 
-# Bho Matthiesen, Alessio Zappone, Eduard A. Jorswieck, and Merouane Debbah,
-# "Deep Learning for Optimal Energy-Efficient Power Control in Wireless
-# Interference Networks," submitted to IEEE Journal on Selected Areas in
-# Communication.
+# Bho Matthiesen, Alessio Zappone, Karl-L. Besser, Eduard A. Jorswieck, and
+# Merouane Debbah, "A Globally Optimal Energy-Efficient Power Control Framework
+# and its Efficient Implementation in Wireless Interference Networks,"
+# submitted to IEEE Transactions on Signal Processing
 # 
 # License:
 # This program is licensed under the GPLv2 license. If you in any way use this
@@ -32,10 +32,13 @@ CPPFLAGS +=  -m64 -I${MKLROOT}/include
 # lambertW
 CPPFLAGS += -Ilambert_w/include
 
+# path to anaconda python3 binary
+PY = ${HOME}/anaconda3/bin/python3
+
 ## default targets
 
 .PHONY:
-all: wsee_lambert
+all: wseePy.cpython-36m-x86_64-linux-gnu.so
 
 .PHONY:
 clean:
@@ -43,6 +46,16 @@ clean:
 	rm -rf .d
 
 ## rules
+wseePy.cpython-36m-x86_64-linux-gnu.so: setup.py wseePy.pyx util.o wsee_lambert.h BRB.h
+	$(PY) $< build
+	ln -sf build/lib.linux-x86_64-3.6/$@
+
+wseePy.pyx: wseePy4.pyx wseePy7.pyx
+	cat $^ > $@
+	@rm $^
+
+wseePy%.pyx: wseePy.pyx.m4
+	m4 -P --define=DIM=$(*F) $< > $@
 
 test_lambert: util.o
 

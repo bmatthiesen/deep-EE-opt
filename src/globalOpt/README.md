@@ -1,9 +1,9 @@
-Deep Learning for Optimal Energy-Efficient Power Control in Wireless Interference Networks
+A Globally Optimal Energy-Efficient Power Control Framework and its Efficient Implementation in Wireless Interference Networks
 ==================
 
 This code package is related to the following scientific article:
 
-Bho Matthiesen, Alessio Zappone, Eduard A. Jorswieck, and Merouane Debbah, "[Deep Learning for Optimal Energy-Efficient Power Control in Wireless Interference Networks](https://arxiv.org/abs/1812.06920)," submitted to IEEE Journal on Selected Areas in Communication.
+Bho Matthiesen, Alessio Zappone, Karl-L. Besser, Eduard A. Jorswieck, and Merouane Debbah, "[A Globally Optimal Energy-Efficient Power Control Framework and its Efficient Implementation in Wireless Interference Networks](https://arxiv.org/abs/1812.06920)," submitted to IEEE Transactions on Signal Processing
 
 ## Contents
 
@@ -13,9 +13,9 @@ The branch-and-bound algorithm to generate the training, validation, and test se
 * `BRB.h`, `util.h`, `util.cpp`: Branch-and-bound algorithm and auxiliary files
 * `test_lambert.cpp`: A simple test program for wsee_lambert.h
 * `test_wsee.py`: Test script for the Python module
-* `wseePy.pyx`: Cython module to interface wsee_lambert.h
+* `wseePy.pyx.m4`: m4 File to Generate the Cython module to interface wsee_lambert.h
 * `run_wsee.py`: The script that actually generates the training data
-* `sbatch.sh`, `sbatch_collect.sh`: `run_wsee.py` is written to run a HPC system with slurm workload manager. `sbatch.sh` starts several parallel instances of `run_wsee.py`, `sbatch_collect.sh` collects the results in a single file.
+* `slurm/`: `run_wsee.py` and some other scripts are written to run on a HPC system with slurm workload manager. `sbatch.sh` starts several parallel instances of `run_wsee.py`, `sbatch_collect.sh` collects the results in a single file.
 * `collect.py`: Collectes results from parallel `run_wsee.py` instances in a single file.
 * `setup.py`: Build python module
 
@@ -41,9 +41,7 @@ For debugging purposes it might be desired to first build `test_lambert.cpp` wit
 
 ## Acknowledgements
 
-The research of Bho Matthiesen and Eduard A. Jorswieck was supported in part by the Deutsche Forschungsgemeinschaft (DFG) in the [Collaborative Research Center 912 "Highly Adaptive Energy-Efficient Computing."](https://tu-dresden.de/ing/forschung/sfb912)
-
-The work of A. Zappone and M. Debbah was funded by the European Commission through the H2020-MSCA IF-BESMART project under Grant Agreement 749336.
+This research was supported in part by the Deutsche Forschungsgemeinschaft (DFG) in the [Collaborative Research Center 912 "Highly Adaptive Energy-Efficient Computing."](https://tu-dresden.de/ing/forschung/sfb912) and under grant JO 801/23-1, and by the European Commission through the H2020-MSCA IF-BESMART project under Grant Agreement 749336.
 
 We thank the Center for Information Services and High Performance Computing (ZIH) at TU Dresden for generous allocations of computer time.
 
