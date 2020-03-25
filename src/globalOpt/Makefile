@@ -26,7 +26,7 @@ LDFLAGS=-g -march=native -m64
 LDLIBS=-lstdc++ -lm
 
 # intel mkl
-LDLIBS +=  -L${MKLROOT}/lib/intel64 -Wl,--no-as-needed -lmkl_rt -lpthread -lm -ldl
+LDLIBS +=  -L${MKLROOT}/lib -Wl,--no-as-needed -lmkl_rt -lpthread -lm -ldl
 CPPFLAGS +=  -m64 -I${MKLROOT}/include
 
 # lambertW

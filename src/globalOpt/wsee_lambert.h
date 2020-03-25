@@ -41,14 +41,13 @@ class WSEE : public BRB<Dim>
 		using typename BRB<Dim>::vtype;
 		using typename BRB<Dim>::RBox;
 		using typename BRB<Dim>::PBox;
-	    using BRB<Dim>::disableReduction;
 
 		double mu[Dim] __attribute__((aligned(64)));
 		double psi[Dim] __attribute__((aligned(64)));
 		double alpha[Dim] __attribute__((aligned(64)));
 		double beta[Dim][Dim] __attribute__((aligned(64)));
 
-		WSEE() : BRB<Dim>() { disableReduction = true; }
+		WSEE() : BRB<Dim>() { }
 
 		double objective(const vtype& x) const
 			{ return WSEEobj(x); }
@@ -57,9 +56,6 @@ class WSEE : public BRB<Dim>
 		double WSEEobj(const vtype& x) const;
 
 		void bound(RBox& r) const override final;
-
-		double red_alpha(const size_t, const double, const vtype&, const vtype&) const override { throw std::runtime_error("reduction not implemented"); };
-		double red_beta(const size_t, const double, const vtype&, const vtype&) const override { throw std::runtime_error("reduction not implemented"); };
 
 		const vtype& feasiblePoint(const RBox& r) const override final
 			{	return r.lb(); }

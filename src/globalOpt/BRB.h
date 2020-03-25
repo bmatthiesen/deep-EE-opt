@@ -159,9 +159,7 @@ class BRB
 		// parameter
 		bool output;
 		unsigned long long outputEvery;
-		bool disableReduction;
 		bool useRelTol;
-		bool enablePruning;
 
 		// result
 		vtype xopt;
@@ -188,12 +186,7 @@ class BRB
 		// functions
 		void setStatus(const Status s);
 
-		void reduction(const PBox& P, RBox& red, const double gamma) const; // false if reduced box is empty
-
 		virtual void bound(RBox& r) const =0;
-
-		virtual double red_alpha(const size_t i, const double gamma, const vtype& lb, const vtype& ub) const =0;
-		virtual double red_beta(const size_t i, const double gamma, const vtype& lb, const vtype& ub) const =0;
 
 		virtual const vtype& feasiblePoint(const RBox& r) const =0;
 
@@ -203,13 +196,11 @@ class BRB
 		virtual double obj(const vtype& x) const =0;
 
 		virtual void checkpoint() const;
-
-		void prune(RType& R);
 };
 
 
 template <size_t Dim>
-BRB<Dim>::BRB() : output(true), outputEvery(1e6), disableReduction(false), useRelTol(true), enablePruning(false), epsilon(1e-2)
+BRB<Dim>::BRB() : output(true), outputEvery(1e6), useRelTol(true), epsilon(1e-2)
 {
 	setStatus(Status::Unsolved);
 	std::setlocale(LC_NUMERIC, "en_US.UTF-8");
@@ -297,38 +288,7 @@ calcTolerance(bool u, double o, double e)
 	return u ? (1+e)*o : o+e;
 }
 
-template <size_t Dim>
-void
-BRB<Dim>::prune(RType& R)
-{
-	RType Rnew;
-	const double gamma = calcTolerance(useRelTol, optval, epsilon);
 
-	// prune if bound < gamma
-
-#ifdef FIFO
-	while (!R.empty() && R.front().bound >= gamma)
-	{
-		Rnew.push(std::move(const_cast<RBox&>(R.front())));
-#else
-	while (!R.empty() && R.top().bound >= gamma)
-	{
-	    // Supposedly this is legal: https://stackoverflow.com/a/20149745/620382
-		Rnew.push(std::move(const_cast<RBox&>(R.top())));
-#endif
-		R.pop();
-	}
-
-	std::swap(R, Rnew);
-
-	return;
-}
-
-/*
- * Algorithm BRB in Section 7.6 of Tuy et al., "Monotonic Optimization: Branch
- * and Cut Methods", in: Audet et al., "Essays and Surveys in Global
- * Optimization," Springer 2005.
- */
 template <size_t Dim>
 void
 BRB<Dim>::optimize(bool startFromXopt)
@@ -369,7 +329,9 @@ BRB<Dim>::optimize(bool startFromXopt)
 
 			const double gamma = calcTolerance(useRelTol, optval, epsilon);
 
-			reduction(P[i], red, gamma); // update lb, ub
+			red.lb() = P[i].lb;
+			red.ub() = P[i].ub;
+
 			bound(red);
 
 			if (red.bound < gamma || isEmpty(P[i])) {
@@ -388,13 +350,6 @@ BRB<Dim>::optimize(bool startFromXopt)
 					// TODO this would be the point to prune R
 					optval = tmp;
 					xopt = feasiblePoint(red);
-
-					if (enablePruning && iter - lastUpdate > 10000)
-					{
-						std::printf("PRUNE: %'zu", R.size());
-						prune(R);
-						std::printf(" %'zu\n", R.size());
-					}
 
 					lastUpdate = iter;
 				}
@@ -465,33 +420,6 @@ BRB<Dim>::optimize(bool startFromXopt)
 	}
 }
 
-template <size_t Dim>
-void
-BRB<Dim>::reduction(const PBox& P, RBox& red, const double gamma) const
-{
-
-	if (disableReduction)
-	{
-		red.lb() = P.lb;
-		red.ub() = P.ub;
-
-		return;
-	}
-
-	// compute red.lb
-	for (size_t i = 0; i < Dim; ++i)
-	{
-		const double alpha = red_alpha(i, gamma, P.lb, P.ub);
-		red.lb(i) = P.ub[i] - alpha * (P.ub[i] - P.lb[i]);
-	}
-
-	// compute red.ub
-	for (size_t i = 0; i < Dim; ++i)
-	{
-		const double beta = red_beta(i, gamma, red.lb(), P.ub);
-		red.ub(i) = red.lb(i) + beta * (P.ub[i] - red.lb(i));
-	}
-}
 
 template <size_t Dim>
 void

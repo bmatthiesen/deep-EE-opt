@@ -1,26 +1,6 @@
 # cython: c_string_type=str, c_string_encoding=ascii
 # vim: syntax=pyrex
 
-# Copyright (C) 2018-2019 Bho Matthiesen, Karl-Ludwig Besser
-# 
-# This program is used in the article:
-# 
-# Bho Matthiesen, Alessio Zappone, Karl-L. Besser, Eduard A. Jorswieck, and
-# Merouane Debbah, "A Globally Optimal Energy-Efficient Power Control Framework
-# and its Efficient Implementation in Wireless Interference Networks,"
-# submitted to IEEE Transactions on Signal Processing
-# 
-# License:
-# This program is licensed under the GPLv2 license. If you in any way use this
-# code for research that results in publications, please cite our original
-# article listed above.
-# 
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-
-
 from libcpp.vector cimport vector
 from libcpp.string cimport string
 from cython import boundscheck, wraparound
@@ -48,7 +28,6 @@ cdef extern from "wsee_lambert.h":
         double sigma[DIM]
 
         libcpp.bool useRelTol
-        libcpp.bool disableReduction
 
         vtype xopt
         double optval
@@ -77,7 +56,6 @@ cdef class WSEE`'`'DIM:
         self._thisptr.setLB(0)
         self._thisptr.setPrecision(1e-2)
         self._thisptr.useRelTol = True
-        self._thisptr.disableReduction = True
 
         for i in range(DIM):
             self._thisptr.mu[i] = mu
