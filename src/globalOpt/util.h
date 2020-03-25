@@ -61,7 +61,7 @@ public:
 		}
 		auto r = std::move(cache_.back());
 		cache_.pop_back();
-		return std::move(r);
+		return r;
 	}
 
 	void put(std::unique_ptr<T>&& ptr)
