@@ -95,7 +95,7 @@ def SCA(h, mu, Pc, Pmax, pt = None, MaxIter = 10000, parm_alpha = 1e-8, parm_bet
 
         # solve inner problem
         pvar = cp.Variable(4)
-        obj_nl = cp.log(cp.multiply(np.diag(s)/tmp2, pvar)+1) * txp
+        obj_nl = cp.log(cp.multiply(np.diag(h)/tmp2, pvar)+1) * txp
         obj_l  = cp.multiply(c, pvar)
 
         objective = cp.Maximize(cp.sum(obj_nl + obj_l + d))
