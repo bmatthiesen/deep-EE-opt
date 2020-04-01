@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright (C) 2018-2019 Bho Matthiesen, Karl-Ludwig Besser
+# Copyright (C) 2018-2020 Bho Matthiesen, Karl-Ludwig Besser
 # 
 # This program is used in the article:
 # 
@@ -130,7 +130,7 @@ def createModel(layer, trainOnObj, sumOutputLayer = False):
 
     return model
 
-def DL(layer, bs, nEpochs, dfile, savedir, wpidx, trainOnObj=False, sumOutputLayer=False, init=None, perc_tset=1.):
+def DL(layer, bs, nEpochs, dfile, savedir, wpidx, trainOnObj=False, sumOutputLayer=False, init=None):
     assert(not (trainOnObj and sumOutputLayer))
 
     # create result directory
@@ -150,7 +150,7 @@ def DL(layer, bs, nEpochs, dfile, savedir, wpidx, trainOnObj=False, sumOutputLay
 
     # initialize model with random weights
     if init is None:
-        #keras.initializers.RandomNormal() # TODO AZ uses stddev=0.5, Keras doc stddev=0.05
+        #keras.initializers.RandomNormal()
         pass
     else:
         model.load_weights(init)
@@ -208,18 +208,6 @@ def DL(layer, bs, nEpochs, dfile, savedir, wpidx, trainOnObj=False, sumOutputLay
         else:
             tout = f['training/xopt'][...]
             vout = f['validation/xopt'][...]
-
-    ### Select channels randomly
-    #print(tin.shape)
-    #_num_channels = len(tin)/51
-    ##perc_tset = .005
-    #selected_channels = np.random.randint(0, _num_channels, size=int(_num_channels*perc_tset))
-    #tin = np.vstack([tin[_select*51:(_select+1)*51] for _select in selected_channels])
-    #print(tin.shape)
-    #print(tout.shape)
-    #tout = np.concatenate([tout[_select*51:(_select+1)*51] for _select in selected_channels])
-    #print(tout.shape)
-    ###
 
     history = model.fit(tin, tout, validation_data=None, epochs=nEpochs, batch_size=bs, callbacks=[hist, checkpointer])
     model.save(savefile)
