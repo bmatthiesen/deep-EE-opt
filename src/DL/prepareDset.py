@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright (C) 2018-2019 Bho Matthiesen, Karl-Ludwig Besser
+# Copyright (C) 2018-2020 Bho Matthiesen, Karl-Ludwig Besser
 # 
 # This program is used in the article:
 # 
@@ -23,7 +23,8 @@ import h5py
 import numpy as np
 
 ofn = '../../data/dset_final.h5'
-f = h5py.File('../../data/global_results.h5', 'r')
+f = h5py.File('../../data/wsee4-processed.h5', 'r')  # 4 user scenario
+#f = h5py.File('../../data/wsee7-processed.h5', 'r')  # 7 user scenario
 
 sets = [
         {'name': 'validation', 'cidx': slice(200), 'pidx': slice(None)},
