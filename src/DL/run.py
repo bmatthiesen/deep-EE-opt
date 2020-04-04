@@ -33,7 +33,7 @@ import tensorflow as tf
 import keras.backend as K
 
 Config = (
-        ('4users_rerun', 128, False, ([128, 64, 32, 16, 8], ['elu', 'relu', 'elu', 'relu', 'elu'])),
+        ('4users', 128, False, ([128, 64, 32, 16, 8], ['elu', 'relu', 'elu', 'relu', 'elu'])),
     )
 
 numReal = 10
@@ -52,22 +52,6 @@ def doPlot(dfile, results, savedir, trainOnObj, sumLayer, epoch = None):
     histfile = os.path.join(savedir, 'history-wp{}.h5'.format(wpidx))
     mfile = os.path.join(savedir, mfilename.format(wpidx))
 
-    """
-    mfile2 = None
-    mepoch = -1
-    mloss = np.inf
-    for fn in pathlib.Path(savedir).glob('modelCP-wp0.*'):
-        match = re.search('-wp0.(\d+)-([0-9.]+)\.h5', fn.name)
-        epoch = match.group(1)
-        loss = match.group(2)
-
-        if mfile2 is None or (epoch > mepoch and loss <= mloss):
-            mepoch = epoch
-            mloss = loss
-            mfile2 = fn.name
-    mfile2 = os.path.join(savedir, mfile2)
-    """
-
     # prepare plot
     fig, ax = plt.subplots(2,2, figsize = (13,8), dpi = 96)
 
@@ -79,19 +63,8 @@ def doPlot(dfile, results, savedir, trainOnObj, sumLayer, epoch = None):
         ax[0,0].grid(True)
         ax[0,0].legend()
 
-    # load models
-
-
-    #model1 = keras.models.load_model(mfile, custom_objects={"tf": tf})
-    #model2 = keras.models.load_model(mfile2, custom_objects={"tf": tf}
-
     model1 = dl.createModel(layer, trainOnObj, sumLayer)
     model1.load_weights(mfile)
-
-    """
-    model2 = dl.createModel(layer, trainOnObj)
-    model2.load_weights(mfile2)
-    """
 
     # get PdB
     with h5py.File(results, 'r') as rf:
@@ -130,7 +103,6 @@ def doPlot(dfile, results, savedir, trainOnObj, sumLayer, epoch = None):
 
             dset = d[s]
             _, obj, N = predict(model1, dset)
-            #_, obj2, _ = predict(model2, dset)
 
             objopt = np.asarray(dset['objval'][:N]).reshape(*obj.shape)
 
@@ -164,12 +136,7 @@ if __name__=="__main__":
             # train
             try:
                 dl.DL(layer, batchsize, nEpochs, dfile, savedir, wpidx, trainOnObj, sumLayer)
-
                 doPlot(dfile, results, savedir, trainOnObj, sumLayer)
-
-                #for e in range(100, nEpochs, 100):
-                #    doPlot(dfile, results, savedir, trainOnObj, sumLayer, epoch = e)
             except Exception as e:
                 raise
                 print(e)
-

@@ -24,10 +24,11 @@ import sys
 import os.path
 import h5py
 import numpy as np
-from run import numReal, SDs, nEpochs
+from run import numReal, Config, nEpochs
 import itertools as it
 
-bn = 'modelCP-wp{wpidx}.{epoch:03d}.h5'
+SDs = np.array(Config)[:, 0]
+bn = 'modelCP-wp{wpidx}.{epoch:04d}.h5'
 indices = range(1,nEpochs+1)
 
 gn = 'training_loss'

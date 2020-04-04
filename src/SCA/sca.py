@@ -152,7 +152,7 @@ if __name__ == "__main__":
     import itertools as it
     import h5py
 
-    dfn = '../../data/results.h5'
+    dfn = '../../data/wsee4-processed.h5'
     mu = 4
     Pc = 1
 

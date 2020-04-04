@@ -26,13 +26,13 @@ import numpy as np
 import keras
 import keras.backend as K
 import tensorflow as tf
-import DL.dl as dl
+import dl
 import matplotlib.pyplot as plt
 import pandas as pd
 import os.path
 
-dfn = '../../data/dset_final.h5'
-rfn = '../../data/results.h5'
+dfn = '../../data/dset4.h5'
+rfn = '../../data/wsee4-processed.h5'
 rdb = '../../results/final'
 rdn = ['128', '32', '16']
 hbn = 'history-wp{wpidx}.h5'
@@ -99,32 +99,6 @@ def predict(model, inp):
 
     return obj
 
-
-"""
-if __name__=="__main__":
-    wsee = dict()
-
-    with h5py.File(rfn, 'r') as f:
-        PdB = f['input/PdB'][...]
-
-    with h5py.File(dfn,'r') as f:
-        hin = f['test/input'][...]
-        wsee['opt'] = f['test/objval'][...]
-        wsee['SCA'] = f['test/SCA'][...]
-        wsee['SCA one shot'] = f['test/SCAmax'][...]
-
-        wsee['ANN'] = predict(keras.models.load_model(mfn), f['test/input'][...])
-
-    wsee['max'] = wsee_pmax(hin)
-    wsee['best'] = wsee_best(hin)
-
-    for k in wsee:
-        wsee[k] = np.mean(wsee[k].reshape(int(wsee[k].shape[0]/len(PdB)), len(PdB)), axis=0)
-        plt.plot(PdB, wsee[k], label=k)
-
-    plt.legend()
-    plt.show()
-"""
 if __name__=="__main__":
     def reshape(d):
         return np.nanmean(scale * d.reshape(int(d.shape[0]/len(PdB)), len(PdB)), axis=0)

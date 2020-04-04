@@ -35,7 +35,7 @@ parser.add_argument('key')
 parser.add_argument('index', type=int)
 args = parser.parse_args()
 
-rf = 'dset4.h5'
+rf = '../../data/dset4.h5'
 
 with h5py.File(rf,'r') as f:
     inp = f['training/input'][...]
