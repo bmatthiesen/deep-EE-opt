@@ -3,7 +3,7 @@ A Globally Optimal Energy-Efficient Power Control Framework and its Efficient Im
 
 This code package is related to the following scientific article:
 
-Bho Matthiesen, Alessio Zappone, Karl-L. Besser, Eduard A. Jorswieck, and Merouane Debbah, "[A Globally Optimal Energy-Efficient Power Control Framework and its Efficient Implementation in Wireless Interference Networks](https://arxiv.org/abs/1812.06920)," submitted to IEEE Transactions on Signal Processing
+Bho Matthiesen, Alessio Zappone, Karl-L. Besser, Eduard A. Jorswieck, and Merouane Debbah, "[A Globally Optimal Energy-Efficient Power Control Framework and its Efficient Implementation in Wireless Interference Networks](https://arxiv.org/abs/1812.06920)," accepted for publication in IEEE Transactions on Signal Processing.
 
 
 ## Abstract of Article
